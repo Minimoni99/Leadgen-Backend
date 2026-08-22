@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - leadgen_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  tool:
+    build: .
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["python", "-m", "leadgen.cli"]
+
+  scraper:
+    image: ${SCRAPER_IMAGE}
+    env_file:
+      - .env
+    volumes:
+      - .:/work
+      - ./seeds:/seeds:ro
+      - ./output:/out
+      - ./proxies.txt:/proxies.txt:ro
+    working_dir: /work
+    command: [
+      "-input", "/seeds/queries.txt",
+      "-results", "/out/results.csv",
+      "-depth", "${SCRAPER_DEPTH}",
+      "-c", "${SCRAPER_CONCURRENCY}",
+      "-exit-on-inactivity", "${SCRAPER_EXIT_INACTIVITY}",
+      "-email"
+    ]
+
+volumes:
+  leadgen_pgdata:
+    name: leadgen_pgdata
