@@ -1,0 +1,22 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+proxies.txt
+
+# scrape output — data, not source
+out/
+output/
+gmaps-output/
+*.csv
+*.jsonl
+
+# db
+pgdata/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
